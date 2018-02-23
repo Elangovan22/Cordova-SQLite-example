@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/index.css">
+  <script>
+window.onload = function what()
+{
+
+};
+function echotest(){
+window.sqlitePlugin.echoTest(function() {
+      console.log('ECHO test OK');
+});
+}
+function updateTable(){
+  var db = window.sqlitePlugin.openDatabase({name: 'test.db', location: 'default'});
+  var userName = document.getElementById("email-field").value;
+  var passWord = document.getElementById("password-field").value;
+  db.transaction(function(transaction) {
+      var executeQuery = "UPDATE test_table SET PASSWORD = ? WHERE USERNAME = ?";
+      transaction.executeSql(executeQuery, [passWord,userName],
+        function(tx, result) {alert('Updated successfully');},
+        function(error){alert('Something went Wrong');});
+    });
+}
+function selfcheck(){
+     window.sqlitePlugin.selfTest(function() {
+    console.log('SELF test OK');
+  });
+}
+function createTable(){
+  var db = window.sqlitePlugin.openDatabase({name: 'test.db', location: 'default'});
+  var userName = document.getElementById("email-field").value;
+  var passWord = document.getElementById("password-field").value;
+ db.transaction(function(tx) {
+    tx.executeSql('CREATE TABLE IF NOT EXISTS test_table (id integer primary key, username text, password text)');
+    tx.executeSql("INSERT INTO test_table (username, password) VALUES (?,?)", [userName, passWord], function(tx, res) {
+    }, function(e) {
+      console.log("ERROR: " + e.message);
+    });
+  });
+}
+function viewTable(){
+$("#TableData").html("");
+  var db = window.sqlitePlugin.openDatabase({name: 'test.db', location: 'default'});
+  db.transaction(function(transaction) {
+  transaction.executeSql('SELECT * FROM test_table', [], function (tx, results) {
+       var len = results.rows.length, i;
+       $("#rowCount").html(len);
+       for (i = 0; i < len; i++){
+          $("#TableData").append("<tr><td>"+results.rows.item(i).id+"</td><td>"+results.rows.item(i).username+"</td><td>"+results.rows.item(i).password+"</td></tr>");
+       }
+    }, null);
+  });
+}
+  </script>
+</head>
+<body>
+  <div class = "app">
+		<form>
+					<div style="margin-top:40%;">
+					  <input  placeholder="Username" id="email-field" type="username" name="username" onkeypress='handle(event)'  maxlength="30">
+					  <div></div>
+					</div>
+					<div>
+					  <div>
+						<input  placeholder="Password" id="password-field"  onpaste="return false"  type="password" name="password" maxlength="25" onkeypress='handle(event)'>
+					  </div>
+					</div>
+					<div class = "tableheight">
+					  <p id="rowCount"></p>
+						  <table class="table">
+							  <thead>
+								  <th>Username</th>
+								  <th>Password</th>
+							  </thead>
+							  <tbody id="TableData">
+
+							  </tbody>
+						  </table>
+					</div>
+            <input  type="button" onclick="selfcheck();" value="DB SelfCheck"><br /><br/>
+            <input  type="button" onclick="echotest();" value="DB Correct installation echo"><br /><br/>
+            <input  type="button" onclick="updateTable();" value="Update DB"><br /><br/>
+            <input  type="button" onclick="createTable();" value="insert into DB"><br /><br/>
+            <input  type="button" onclick="viewTable();" value="View DB"><br /><br/>
+       </form>
+
+</div>
+  <script type="text/javascript" src="js/jquery.min.js"></script>
+</body>
+</html>
